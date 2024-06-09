@@ -98,23 +98,16 @@ func (p Plugin) Exec() error {
 
 	var registryAuth bool
 
+	var cmds []*exec.Cmd
 	// login to the Docker registry
 	if p.Login.Password != "" {
 		registryAuth = true
-		cmd := commandLogin(p.Login)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		cmd.Env = envs
-		err := cmd.Run()
-		if err != nil {
-			return fmt.Errorf("error authenticating: %s", err)
-		}
+        cmds = append(cmds, commandLogin(p.Login))                      // docker version
 	} else {
 		registryAuth = false
 		fmt.Println("Registry credentials not provided. Guest mode enabled.")
 	}
 
-	var cmds []*exec.Cmd
 	cmds = append(cmds, commandVersion())                      // docker version
 	cmds = append(cmds, commandInfo())                         // docker info
 	cmds = append(cmds, commandDeploy(p.Deploy, registryAuth)) // docker stack deploy
